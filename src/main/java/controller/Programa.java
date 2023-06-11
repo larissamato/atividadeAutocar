@@ -1,8 +1,6 @@
 package controller;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -10,61 +8,66 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
-import entities.Aluno;
-import entities.Curso;
-
+import entities.Automovel;
+import entities.Modelo;
+import entities.Marca;
 
 public class Programa {
 
-	public static void main(String[] args) throws ParseException {
-	
-System.out.println("\n*** Versão 1 - Inicial ***");
-		
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("aulajpa");
-		EntityManager em = emf.createEntityManager();
-		
-		//Inicia o controle de transação com o banco através do EntityManager
-		em.getTransaction().begin();
-		
-		DateFormat df = new SimpleDateFormat("dd-mm-yyyy");
-		Aluno a1 = new Aluno(null,"Isabelle", "Femino", df.parse("01-01-2023") );
-		
-		Curso c1 = new Curso(null, "POO II");
-		
-		c1.adicionarAluno(a1);
-		
-		//Grava os objetos no banco - cada objeto vira uma linha da respectiva tabela
-		em.persist(a1);
-		em.persist(c1);
-		
-		//Finaliza a transação dando commit no banco
-		em.getTransaction().commit();
-		
-		Query query1 = em.createQuery("SELECT c FROM Curso c");
-		
-		List<Curso> cursos = query1.getResultList();
-		for (Curso c : cursos) {
-			System.out.println("\n *** [" + c.getIdcurso() + " | "+ c.getNomecurso() + "] ***");
-			for (Aluno a : c.getAlunos()) {
-				System.out.println("\tAluno: " + a.getIdaluno() + " | "+ a.getNome() );
-			}
-			
-		}
-		
-		
-		Query query2 = em.createQuery("SELECT a FROM Aluno a");
-		
-		List<Aluno> alunos = query2.getResultList();
-		for (Aluno a : alunos) {
-			System.out.println("\n *** [" + a.getIdaluno() + " | "+ a.getNome() + "] ***");
-			for (Curso c : a.getCursos()) {
-				System.out.println("\tCurso: " + c.getIdcurso() + " | "+ c.getNomecurso() );
-			}
-		}
-		
-		em.close();
-		emf.close();
+    public static void main(String[] args) throws ParseException {
 
-	}
+        System.out.println("\n*** Versao 1 - Inicial ***");
 
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("atividade");
+        EntityManager em = emf.createEntityManager();
+
+        em.getTransaction().begin();
+
+        Marca marca1 = new Marca(null,"Honda");
+        Modelo modelo1 = new Modelo(null, "Civic", 100, marca1);
+        modelo1.setMarca(marca1);
+        Automovel automovel1 = new Automovel(null, 2023, 2023, "Sem observacoes", 90000.0f, 10000, modelo1);
+        modelo1.getAutomoveis().add(automovel1);
+
+        em.persist(marca1);
+        em.persist(modelo1);
+        em.persist(automovel1);
+
+        em.getTransaction().commit();
+
+        Query query1 = em.createQuery("SELECT m FROM Modelo m");
+
+        List<Modelo> modelos = query1.getResultList();
+        for (Modelo modelo : modelos) {
+            System.out.println("\n *** ["+ modelo.getDescricao() + "] ***");
+            Marca marca = modelo.getMarca();
+            if (marca != null) {
+                System.out.println("\tMarca: " + marca.getNome());
+            }
+            for (Automovel automovel : modelo.getAutomoveis()) {
+                System.out.println("\tAutomovel: " + " Ano: " + automovel.getAnoFabricacao()
+                        + " | Preco: " + automovel.getPreco());
+            }
+        }
+
+        Query query2 = em.createQuery("SELECT a FROM Automovel a");
+
+        List<Automovel> automoveis = query2.getResultList();
+        for (Automovel automovel : automoveis) {
+            System.out.println("\n *** [" + automovel.getAnoFabricacao()
+                    + " | Preco: " + automovel.getPreco() + "] ***");
+            Modelo modelo = automovel.getModelo();
+            if (modelo != null) {
+                System.out.println("\tModelo: " + modelo.getDescricao());
+                Marca marca = modelo.getMarca();
+                if (marca != null) {
+                    System.out.println("\tMarca: " + marca.getNome());
+                }
+            }
+        }
+
+        em.close();
+        emf.close();
+    }
 }
+
